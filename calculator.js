@@ -2,9 +2,10 @@
 // Find DOM element and hold onto it, so we don't have to search for it
 // every time we use it.
 const calcForm = document.getElementById("calc-form");
-const formAmount = document.getElementById('loan-amount');
-const formYears = document.getElementById('loan-years');
-const formRate = document.getElementById('loan-rate');
+const amountInput = document.getElementById('loan-amount');
+const yearsInput = document.getElementById('loan-years');
+const rateInput = document.getElementById('loan-rate');
+const resultArea = document.querySelector('#calc-monthly-payment');
 
 /** Get form values and return as `{amount, years, rate}`.
  *
@@ -13,51 +14,46 @@ const formRate = document.getElementById('loan-rate');
  * */
 
 function getFormValues() {
-  console.log('getFromValues');
+  console.log('getFromValues invoked');
 
-  let output = new Object();
-  output.amount = formAmount.value;
-  output.years = formYears.value;
-  let inputRate = decideRate(formRate.value);
-
-  if (inputRate < 1 && inputRate > 0) {
-    output.rate = inputRate;
+  return {
+    amount: Number(amountInput.value),
+    years: Number(yearsInput.value),
+    rate: Number(rateInput.value),
   }
-
-  //where to put this??
-  //call decideRate()
-  // '%' is forcing, etc
-  //who is the person responsible for deciding? etc
-
-  else if (inputRate > 1 && inputRate < 100) {
-    output.rate = inputRate / 100;
-  }
-  if (output.rate === undefined) {
-    throw new Error('Could not parse loan rate');
-  }
-  console.log('getFormValues returns ', output);
-  return output;
 }
 
+/**
+ *  Nice to have function, to interpret between 4.5% and 0.045
+ */
+
 function decideRate(rate){
-  if ()
 }
 
 /** Calculate monthly payment and return exact amount. */
 
 function calcMonthlyPayment(amount, years, rate) {
-  console.log('calcMonthlyPayment', amount, years, rate);
-  return amount * rate / 12 / (1 - (1 + rate / 12) ** (-1 * years * 12));
-}
+  console.log(
+    `calcMonthlyPayment invoked with amount=${amount}, years=${years}, rate=${rate}`
+  );
 
+  const MONTHS_IN_YEAR = 12;
+  const monthlyRate = (rate / 100) / MONTHS_IN_YEAR;
+  const n = Math.floor(years * MONTHS_IN_YEAR);
+  
+  return (
+    (monthlyRate * amount)
+    / (1 - Math.pow(1 + monthlyRate, -n))
+  );
+}
 
 /** Get form values, calculate, convert to 2-decimal places, and update UI. */
 
 function getFormValuesAndDisplayResults() {
-  console.log('getFormValuesAndDisplayResults');
-  let values = getFormValues();
-  let amount = calcMonthlyPayment(values.amount, values.years, values.rate);
-  document.querySelector('#calc-monthly-payment').innerHTML = amount.toFixed(2);
+  console.log('getFormValuesAndDisplayResults invoked');
+  const {amount, years, rate} = getFormValues();
+  const payment = calcMonthlyPayment(amount, years, rate);
+  resultArea.innerHTML = "$" + payment.toFixed(2);
 }
 
 
@@ -65,9 +61,9 @@ function getFormValuesAndDisplayResults() {
 
 function setInitialValues() {
   // use the default values in the provided screenshot
-  calcForm.querySelector('#loan-amount').value = 10000;
-  calcForm.querySelector('#loan-years').value = 10;
-  calcForm.querySelector('#loan-rate').value = 4.5;
+  amountInput.value = 10000;
+  yearsInput.value = 10;
+  rateInput.value = 4.5;
   console.log('setInitialValues has run');
 }
 
